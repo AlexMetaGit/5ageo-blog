@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
+import { validateApiAuth } from '@/lib/api-auth'
 
 const blogDir = path.join(process.cwd(), 'data/blog')
 
@@ -37,6 +38,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
 
 // PUT - 更新文章
 export async function PUT(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  // 验证身份
+  const authError = validateApiAuth(request)
+  if (authError) {
+    return authError
+  }
+
   try {
     const { slug } = await params
     const body = await request.json()
@@ -70,6 +77,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
 
 // DELETE - 删除文章
 export async function DELETE(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  // 验证身份
+  const authError = validateApiAuth(request)
+  if (authError) {
+    return authError
+  }
+
   try {
     const { slug } = await params
     const filePath = path.join(blogDir, `${slug}.mdx`)

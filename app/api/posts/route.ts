@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
+import { validateApiAuth } from '@/lib/api-auth'
 
 const blogDir = path.join(process.cwd(), 'data/blog')
 
@@ -36,6 +37,12 @@ export async function GET() {
 
 // POST - 创建新文章
 export async function POST(request: Request) {
+  // 验证身份
+  const authError = validateApiAuth(request)
+  if (authError) {
+    return authError
+  }
+
   try {
     const body = await request.json()
     const { title, date, tags, draft, summary, content, layout, authors, images } = body
