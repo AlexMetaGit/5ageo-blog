@@ -329,6 +329,182 @@ Consider removing the following features that cannot be used in a static build:
 1. Comment out `headers()` from `next.config.js`.
 2. Remove `api` folder and components which call the server-side function such as the Newsletter component. Not technically required and the site will build successfully, but the APIs cannot be used as they are server-side functions.
 
+## API Documentation
+
+This blog provides REST API endpoints for managing posts programmatically. Write operations require authentication.
+
+### Authentication
+
+All write operations (POST, PUT, DELETE) require an API token. Set up authentication by adding the following to your `.env` file:
+
+```bash
+ADMIN_API_TOKEN=your-secure-token-here
+```
+
+Generate a secure token:
+```bash
+openssl rand -base64 32
+```
+
+Include the token in the `Authorization` header:
+```bash
+Authorization: Bearer your-secure-token-here
+```
+
+### Endpoints
+
+#### Get All Posts
+```http
+GET /api/posts
+```
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "slug": "my-first-post",
+      "title": "My First Post",
+      "date": "2024-03-08",
+      "tags": ["nextjs", "react"],
+      "draft": false,
+      "summary": "A brief summary"
+    }
+  ]
+}
+```
+
+#### Get Single Post
+```http
+GET /api/posts/[slug]
+```
+
+**Response:**
+```json
+{
+  "post": {
+    "slug": "my-first-post",
+    "frontmatter": {
+      "title": "My First Post",
+      "date": "2024-03-08",
+      "tags": ["nextjs", "react"],
+      "draft": false
+    },
+    "content": "Post content in markdown..."
+  }
+}
+```
+
+#### Create Post
+```http
+POST /api/posts
+Authorization: Bearer your-token
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "title": "My New Post",
+  "date": "2024-03-08",
+  "tags": ["nextjs"],
+  "draft": false,
+  "summary": "A brief summary",
+  "content": "# Post Content\n\nWrite your post here...",
+  "layout": "PostLayout",
+  "authors": ["default"],
+  "images": []
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "slug": "my-new-post",
+  "message": "文章创建成功"
+}
+```
+
+#### Update Post
+```http
+PUT /api/posts/[slug]
+Authorization: Bearer your-token
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "title": "Updated Title",
+  "date": "2024-03-08",
+  "tags": ["nextjs"],
+  "draft": false,
+  "summary": "Updated summary",
+  "content": "# Updated Content\n\n...",
+  "layout": "PostLayout",
+  "authors": ["default"],
+  "images": []
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "文章更新成功"
+}
+```
+
+#### Delete Post
+```http
+DELETE /api/posts/[slug]
+Authorization: Bearer your-token
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "文章删除成功"
+}
+```
+
+### Example Usage
+
+```bash
+# Get all posts
+curl https://yourblog.com/api/posts
+
+# Create a new post
+curl -X POST https://yourblog.com/api/posts \
+  -H "Authorization: Bearer your-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My New Post",
+    "content": "# Hello World\n\nThis is my post.",
+    "date": "2024-03-08",
+    "tags": ["test"],
+    "draft": false
+  }'
+
+# Update a post
+curl -X PUT https://yourblog.com/api/posts/my-new-post \
+  -H "Authorization: Bearer your-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Title",
+    "content": "# Updated Content\n\nThis is updated.",
+    "date": "2024-03-08",
+    "tags": ["test"],
+    "draft": false
+  }'
+
+# Delete a post
+curl -X DELETE https://yourblog.com/api/posts/my-new-post \
+  -H "Authorization: Bearer your-token"
+```
+
 ## Frequently Asked Questions
 
 - [How can I add a custom MDX component?](/faq/custom-mdx-component.md)
