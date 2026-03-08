@@ -26,9 +26,10 @@ export function validateSlug(slug: string): { valid: boolean; error?: string } {
 /**
  * 验证frontmatter必填字段
  */
-export function validateFrontmatter(
-  frontmatter: Record<string, unknown>,
-): { valid: boolean; error?: string } {
+export function validateFrontmatter(frontmatter: Record<string, unknown>): {
+  valid: boolean
+  error?: string
+} {
   if (
     !frontmatter.title ||
     typeof frontmatter.title !== 'string' ||
@@ -57,11 +58,7 @@ export function validateFrontmatter(
       return { valid: false, error: 'tags必须是数组' }
     }
 
-    if (
-      frontmatter.tags.some(
-        (tag: unknown) => typeof tag !== 'string' || tag.length > 100,
-      )
-    ) {
+    if (frontmatter.tags.some((tag: unknown) => typeof tag !== 'string' || tag.length > 100)) {
       return { valid: false, error: 'tags中的每个元素必须是长度不超过100的字符串' }
     }
   }
@@ -88,7 +85,7 @@ export function validateFrontmatter(
  */
 export function validateFilePath(
   filePath: string,
-  allowedDir: string,
+  allowedDir: string
 ): { valid: boolean; error?: string } {
   // 规范化路径
   const normalizedPath = path.normalize(filePath)
