@@ -21,6 +21,11 @@ const layouts = {
   PostBanner,
 }
 
+function serializeJsonLd(data: unknown): string {
+  // Escape "<" to neutralize "</script>" and similar script-breaking sequences.
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
 export async function generateMetadata(props: {
   params: Promise<{ slug: string[] }>
 }): Promise<Metadata | undefined> {
@@ -110,7 +115,7 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <Layout content={mainContent} authorDetails={authorDetails} next={next} prev={prev}>
         <MDXLayoutRenderer code={post.body.code} components={components} toc={post.toc} />
