@@ -342,3 +342,92 @@ Using the template? Support this effort by giving a star on GitHub, sharing your
 ## Licence
 
 [MIT](https://github.com/timlrx/tailwind-nextjs-starter-blog/blob/main/LICENSE) © [Timothy Lin](https://www.timlrx.com)
+
+---
+
+## 中文说明（5AGEO Blog）
+
+### 项目介绍
+
+5AGEO Blog 是一个基于 [Tailwind Nextjs Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog) 定制的技术博客项目，聚焦 AI 与工程实践内容发布。
+
+项目技术栈如下：
+
+- Next.js 15（App Router）
+- Tailwind CSS
+- Contentlayer（内容建模与 MDX）
+- React 19
+
+适合用于搭建个人技术博客、团队知识库或轻量内容站点。
+
+### 快速开始指南
+
+1. 克隆仓库
+
+```bash
+git clone <your-repo-url>
+cd 5ageo-blog
+```
+
+2. 安装依赖
+
+```bash
+yarn
+```
+
+3. 配置站点信息（按需修改）
+
+- `data/siteMetadata.js`：站点标题、描述、社交链接等
+- `data/authors/default.mdx`：默认作者信息
+- `data/headerNavLinks.ts`：顶部导航
+- `data/projectsData.ts`：项目页数据
+
+4. 启动本地开发环境
+
+```bash
+yarn dev
+```
+
+启动后访问：<http://localhost:3000>
+
+5. 新增文章
+
+将 `.mdx` 文件放入 `data/blog/` 目录，按 frontmatter 规范填写元数据即可自动生成页面。
+
+### 部署说明
+
+#### 方式一：Vercel（推荐）
+
+1. 将代码推送到 GitHub。
+2. 在 Vercel 中导入该仓库。
+3. 保持默认构建设置（Framework: Next.js），完成部署。
+
+常用命令（本地验证）：
+
+```bash
+yarn build
+yarn serve
+```
+
+#### 方式二：静态导出部署（GitHub Pages / S3 / Firebase 等）
+
+```bash
+EXPORT=1 UNOPTIMIZED=1 yarn build
+```
+
+构建成功后将 `out/` 目录部署到任意静态托管平台。
+
+如果需要子路径部署（例如 `https://example.com/myblog`）：
+
+```bash
+EXPORT=1 UNOPTIMIZED=1 BASE_PATH=/myblog yarn build
+```
+
+#### 方式三：自托管 Node.js 服务
+
+```bash
+yarn build
+yarn serve
+```
+
+默认以 Next.js 生产模式启动，可结合 Nginx/Caddy 进行反向代理与 HTTPS 配置。
