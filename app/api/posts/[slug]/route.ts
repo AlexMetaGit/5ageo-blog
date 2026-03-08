@@ -93,7 +93,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     }
 
     const fileContent = matter.stringify(content || '', frontmatter)
-    const filePath = path.join(blogDir, `${slug}.mdx`)
+    const mdxPath = path.join(blogDir, `${slug}.mdx`)
+    const mdPath = path.join(blogDir, `${slug}.md`)
+    // Keep original extension for existing posts; default to .mdx for backward compatibility.
+    const filePath = (await fileExists(mdxPath)) ? mdxPath : (await fileExists(mdPath)) ? mdPath : mdxPath
 
     await writeFile(filePath, fileContent, 'utf-8')
 
