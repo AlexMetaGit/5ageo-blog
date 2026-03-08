@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { validateApiAuth } from '@/lib/api-auth'
+import { validateSlug, validateFrontmatter, createValidationError } from '@/lib/validation'
 
 const blogDir = path.join(process.cwd(), 'data/blog')
 
@@ -10,6 +11,13 @@ const blogDir = path.join(process.cwd(), 'data/blog')
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params
+
+    // 验证slug
+    const slugValidation = validateSlug(slug)
+    if (!slugValidation.valid) {
+      return createValidationError(slugValidation.error || '验证失败')
+    }
+
     const filePath = path.join(blogDir, `${slug}.mdx`)
 
     if (!fs.existsSync(filePath)) {
@@ -46,9 +54,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
 
   try {
     const { slug } = await params
+
+    // 验证slug
+    const slugValidation = validateSlug(slug)
+    if (!slugValidation.valid) {
+      return createValidationError(slugValidation.error || '验证失败')
+    }
+
     const body = await request.json()
     const { title, date, tags, draft, summary, content, layout, authors, images } = body
 
+    // 验证frontmatter
     const frontmatter = {
       title,
       date,
@@ -58,6 +74,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
       layout: layout || 'PostLayout',
       authors: authors || ['default'],
       images: images || [],
+      content,
+    }
+
+    const validation = validateFrontmatter(frontmatter)
+    if (!validation.valid) {
+      return createValidationError(validation.error || '验证失败')
     }
 
     const fileContent = matter.stringify(content || '', frontmatter)
@@ -85,6 +107,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
 
   try {
     const { slug } = await params
+
+    // 验证slug
+    const slugValidation = validateSlug(slug)
+    if (!slugValidation.valid) {
+      return createValidationError(slugValidation.error || '验证失败')
+    }
+
     const filePath = path.join(blogDir, `${slug}.mdx`)
     const mdPath = path.join(blogDir, `${slug}.md`)
 

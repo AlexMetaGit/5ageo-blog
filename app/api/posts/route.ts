@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { validateApiAuth } from '@/lib/api-auth'
+import { validateFrontmatter, createValidationError } from '@/lib/validation'
 
 const blogDir = path.join(process.cwd(), 'data/blog')
 
@@ -47,11 +48,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { title, date, tags, draft, summary, content, layout, authors, images } = body
 
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
-      .replace(/^-|-$/g, '')
-
+    // 验证frontmatter
     const frontmatter = {
       title,
       date: date || new Date().toISOString().split('T')[0],
@@ -61,7 +58,18 @@ export async function POST(request: Request) {
       layout: layout || 'PostLayout',
       authors: authors || ['default'],
       images: images || [],
+      content,
     }
+
+    const validation = validateFrontmatter(frontmatter)
+    if (!validation.valid) {
+      return createValidationError(validation.error || '验证失败')
+    }
+
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+      .replace(/^-|-$/g, '')
 
     const fileContent = matter.stringify(content || '', frontmatter)
     const filePath = path.join(blogDir, `${slug}.mdx`)
