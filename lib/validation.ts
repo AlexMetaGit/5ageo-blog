@@ -1,3 +1,5 @@
+import path from 'path'
+
 import { NextResponse } from 'next/server'
 
 /**
@@ -24,8 +26,14 @@ export function validateSlug(slug: string): { valid: boolean; error?: string } {
 /**
  * 验证frontmatter必填字段
  */
-export function validateFrontmatter(frontmatter: Record<string, any>): { valid: boolean; error?: string } {
-  if (!frontmatter.title || typeof frontmatter.title !== 'string' || frontmatter.title.trim() === '') {
+export function validateFrontmatter(
+  frontmatter: Record<string, unknown>,
+): { valid: boolean; error?: string } {
+  if (
+    !frontmatter.title ||
+    typeof frontmatter.title !== 'string' ||
+    frontmatter.title.trim() === ''
+  ) {
     return { valid: false, error: 'title字段是必填的' }
   }
 
@@ -49,7 +57,11 @@ export function validateFrontmatter(frontmatter: Record<string, any>): { valid: 
       return { valid: false, error: 'tags必须是数组' }
     }
 
-    if (frontmatter.tags.some((tag: any) => typeof tag !== 'string' || tag.length > 100)) {
+    if (
+      frontmatter.tags.some(
+        (tag: unknown) => typeof tag !== 'string' || tag.length > 100,
+      )
+    ) {
       return { valid: false, error: 'tags中的每个元素必须是长度不超过100的字符串' }
     }
   }
@@ -74,16 +86,17 @@ export function validateFrontmatter(frontmatter: Record<string, any>): { valid: 
 /**
  * 验证文件路径（防止路径遍历）
  */
-export function validateFilePath(filePath: string, allowedDir: string): { valid: boolean; error?: string } {
-  const { normalize, join, relative } = require('path')
-
+export function validateFilePath(
+  filePath: string,
+  allowedDir: string,
+): { valid: boolean; error?: string } {
   // 规范化路径
-  const normalizedPath = normalize(filePath)
-  const normalizedAllowedDir = normalize(allowedDir)
+  const normalizedPath = path.normalize(filePath)
+  const normalizedAllowedDir = path.normalize(allowedDir)
 
   // 检查是否在允许的目录内
-  const resolvedPath = join(normalizedAllowedDir, normalizedPath)
-  const relativePathStr = relative(normalizedAllowedDir, resolvedPath)
+  const resolvedPath = path.join(normalizedAllowedDir, normalizedPath)
+  const relativePathStr = path.relative(normalizedAllowedDir, resolvedPath)
 
   // 检查是否包含 .. （尝试遍历到父目录）
   if (relativePathStr.startsWith('..') || normalizedPath.includes('..')) {
