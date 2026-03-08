@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
+import { access, readFile, unlink, writeFile } from 'fs/promises'
 import path from 'path'
 import matter from 'gray-matter'
 import { validateApiAuth } from '@/lib/api-auth'
 import { validateSlug, validateFrontmatter, createValidationError } from '@/lib/validation'
 
 const blogDir = path.join(process.cwd(), 'data/blog')
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await access(filePath)
+    return true
+  } catch {
+    return false
+  }
+}
 
 // GET - 获取单篇文章
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -20,16 +29,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
 
     const filePath = path.join(blogDir, `${slug}.mdx`)
 
-    if (!fs.existsSync(filePath)) {
+    if (!(await fileExists(filePath))) {
       // 尝试 .md 文件
       const mdPath = path.join(blogDir, `${slug}.md`)
-      if (!fs.existsSync(mdPath)) {
+      if (!(await fileExists(mdPath))) {
         return NextResponse.json({ error: '文章不存在' }, { status: 404 })
       }
     }
 
-    const filePathToUse = fs.existsSync(filePath) ? filePath : path.join(blogDir, `${slug}.md`)
-    const content = fs.readFileSync(filePathToUse, 'utf-8')
+    const filePathToUse =
+      (await fileExists(filePath)) ? filePath : path.join(blogDir, `${slug}.md`)
+    const content = await readFile(filePathToUse, 'utf-8')
     const { data, content: body } = matter(content)
 
     return NextResponse.json({
@@ -85,7 +95,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     const fileContent = matter.stringify(content || '', frontmatter)
     const filePath = path.join(blogDir, `${slug}.mdx`)
 
-    fs.writeFileSync(filePath, fileContent, 'utf-8')
+    await writeFile(filePath, fileContent, 'utf-8')
 
     return NextResponse.json({
       success: true,
@@ -117,10 +127,10 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
     const filePath = path.join(blogDir, `${slug}.mdx`)
     const mdPath = path.join(blogDir, `${slug}.md`)
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath)
-    } else if (fs.existsSync(mdPath)) {
-      fs.unlinkSync(mdPath)
+    if (await fileExists(filePath)) {
+      await unlink(filePath)
+    } else if (await fileExists(mdPath)) {
+      await unlink(mdPath)
     } else {
       return NextResponse.json({ error: '文章不存在' }, { status: 404 })
     }
